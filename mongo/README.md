@@ -1,0 +1,1 @@
+# MongoDB Repository for Go
