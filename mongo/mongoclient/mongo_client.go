@@ -12,12 +12,14 @@ type MongoClient struct {
 }
 
 // Creates a new MongoClient instance and checks the connection by pinging the server.
+//
 // Parameters:
+//   - ctx: The context for the operation.
 //   - connectionStr: The MongoDB connection string.
 //
 // Returns:
 //   - A pointer to the MongoClient instance or an error if the connection fails.
-func Connect(connectionStr string) (*MongoClient, error) {
+func Connect(ctx context.Context, connectionStr string) (*MongoClient, error) {
 	// Create a new MongoDB client
 	client, err := mongo.Connect(options.Client().ApplyURI(connectionStr))
 	if err != nil {
@@ -25,7 +27,7 @@ func Connect(connectionStr string) (*MongoClient, error) {
 	}
 
 	// Check the connection
-	if err = client.Ping(context.Background(), nil); err != nil {
+	if err = client.Ping(ctx, nil); err != nil {
 		return nil, err
 	}
 
@@ -35,10 +37,14 @@ func Connect(connectionStr string) (*MongoClient, error) {
 }
 
 // Closes the MongoDB client connection.
+//
+// Parameters:
+//   - ctx: The context for the operation.
+//
 // Returns:
 //   - An error if the disconnection fails.
-func (mc *MongoClient) Disconnect() error {
-	if err := mc.Client.Disconnect(context.Background()); err != nil {
+func (mc *MongoClient) Disconnect(ctx context.Context) error {
+	if err := mc.Client.Disconnect(ctx); err != nil {
 		return err
 	}
 
