@@ -20,7 +20,7 @@ type IMongoBaseRepository interface {
 }
 
 type MongoBaseRepository[T any] struct {
-	collection *mongo.Collection
+	Collection *mongo.Collection
 }
 
 // Creates a new instance of the MongoBaseRepository
@@ -50,7 +50,7 @@ type MongoBaseRepository[T any] struct {
 func New[T any](client *mongo.Client, databaseName, collectionName string) *MongoBaseRepository[T] {
 	collection := client.Database(databaseName).Collection(collectionName)
 	return &MongoBaseRepository[T]{
-		collection: collection,
+		Collection: collection,
 	}
 }
 
@@ -64,7 +64,7 @@ func New[T any](client *mongo.Client, databaseName, collectionName string) *Mong
 //   - nil if the insertion is successful
 //   - An error if the insertion fails
 func (repo *MongoBaseRepository[T]) InsertOne(ctx context.Context, document T) error {
-	_, err := repo.collection.InsertOne(ctx, document)
+	_, err := repo.Collection.InsertOne(ctx, document)
 	if err != nil {
 		return err
 	}
@@ -85,7 +85,7 @@ func (repo *MongoBaseRepository[T]) FindOneById(ctx context.Context, id string) 
 	filter := bson.M{"_id": id}
 
 	var result T
-	err := repo.collection.FindOne(ctx, filter).Decode(&result)
+	err := repo.Collection.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
 		return result, err
 	}
@@ -103,7 +103,7 @@ func (repo *MongoBaseRepository[T]) FindOneById(ctx context.Context, id string) 
 //   - A slice of found documents of type T
 //   - An error if the operation fails
 func (repo *MongoBaseRepository[T]) FindAll(ctx context.Context, filter bson.M) ([]T, error) {
-	cursor, err := repo.collection.Find(ctx, filter)
+	cursor, err := repo.Collection.Find(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +136,7 @@ func (repo *MongoBaseRepository[T]) FindAll(ctx context.Context, filter bson.M) 
 //   - nil if the update is successful
 func (repo *MongoBaseRepository[T]) UpdateOneById(ctx context.Context, id string, update bson.M) error {
 	filter := bson.M{"_id": id}
-	_, err := repo.collection.UpdateOne(ctx, filter, bson.M{"$set": update})
+	_, err := repo.Collection.UpdateOne(ctx, filter, bson.M{"$set": update})
 	if err != nil {
 		return err
 	}
@@ -154,7 +154,7 @@ func (repo *MongoBaseRepository[T]) UpdateOneById(ctx context.Context, id string
 //   - nil if the deletion is successful
 func (repo *MongoBaseRepository[T]) DeleteOneById(ctx context.Context, id string) error {
 	filter := bson.M{"_id": id}
-	_, err := repo.collection.DeleteOne(ctx, filter)
+	_, err := repo.Collection.DeleteOne(ctx, filter)
 	if err != nil {
 		return err
 	}
