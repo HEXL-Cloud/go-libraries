@@ -1,0 +1,25 @@
+name: Release Package
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release-mongo-package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Read version from version.txt
+        id: version
+        run: |
+          cd mongo
+          echo "version=$(cat version.txt)" >> $GITHUB_OUTPUT
+
+      - name: Create tag
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git tag mongo/${{ steps.version.outputs.version }}
+          git push origin mongo/${{ steps.version.outputs.version }}
+          echo "Tag created: mongo/${{ steps.version.outputs.version }}"
