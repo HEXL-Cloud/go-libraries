@@ -8,7 +8,7 @@ import (
 )
 
 type MongoClient struct {
-	client *mongo.Client
+	Client *mongo.Client
 }
 
 // Creates a new MongoClient instance and checks the connection by pinging the server.
@@ -30,7 +30,7 @@ func Connect(connectionStr string) (*MongoClient, error) {
 	}
 
 	return &MongoClient{
-		client: client,
+		Client: client,
 	}, nil
 }
 
@@ -38,7 +38,7 @@ func Connect(connectionStr string) (*MongoClient, error) {
 // Returns:
 //   - An error if the disconnection fails.
 func (mc *MongoClient) Disconnect() error {
-	if err := mc.client.Disconnect(context.Background()); err != nil {
+	if err := mc.Client.Disconnect(context.Background()); err != nil {
 		return err
 	}
 
