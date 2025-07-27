@@ -39,7 +39,7 @@ func TestNew(t *testing.T) {
 	repo := New[TestEntity](client, "testdb", "testcol")
 
 	assert.NotNil(t, repo)
-	assert.NotNil(t, repo.collection)
+	assert.NotNil(t, repo.Collection)
 }
 
 func TestMongoBaseRepository_InsertOne(t *testing.T) {
