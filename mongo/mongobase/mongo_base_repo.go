@@ -14,6 +14,9 @@ import (
 type IMongoBaseRepository interface {
 	InsertOne(ctx context.Context, document Entity) error
 	FindOneById(ctx context.Context, id string) (Entity, error)
+	FindAll(ctx context.Context, filter bson.M) ([]Entity, error)
+	UpdateOneById(ctx context.Context, id string, update bson.M) error
+	DeleteOneById(ctx context.Context, id string) error
 }
 
 type MongoBaseRepository[T any] struct {
@@ -52,6 +55,7 @@ func New[T any](client *mongo.Client, databaseName, collectionName string) *Mong
 }
 
 // Inserts a single document into the collection
+//
 // Parameters:
 //   - ctx: The context for the operation
 //   - document: The document to insert
@@ -69,6 +73,7 @@ func (repo *MongoBaseRepository[T]) InsertOne(ctx context.Context, document T) e
 }
 
 // Finds a single document by _id
+//
 // Parameters:
 //   - ctx: The context for the operation
 //   - id: The ID of the document to find
@@ -86,4 +91,73 @@ func (repo *MongoBaseRepository[T]) FindOneById(ctx context.Context, id string) 
 	}
 
 	return result, nil
+}
+
+// Finds all documents matching the provided filter
+//
+// Parameters:
+//   - ctx: The context for the operation
+//   - filter: The filter to apply to the query
+//
+// Returns:
+//   - A slice of found documents of type T
+//   - An error if the operation fails
+func (repo *MongoBaseRepository[T]) FindAll(ctx context.Context, filter bson.M) ([]T, error) {
+	cursor, err := repo.collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var results []T
+	for cursor.Next(ctx) {
+		var item T
+		if err := cursor.Decode(&item); err != nil {
+			return nil, err
+		}
+		results = append(results, item)
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+// Updates a single document by _id
+//
+// Parameters:
+//   - ctx: The context for the operation
+//   - id: The ID of the document to update
+//   - update: The update to apply to the document
+//
+// Returns:
+//   - nil if the update is successful
+func (repo *MongoBaseRepository[T]) UpdateOneById(ctx context.Context, id string, update bson.M) error {
+	filter := bson.M{"_id": id}
+	_, err := repo.collection.UpdateOne(ctx, filter, bson.M{"$set": update})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Deletes a single document by _id
+//
+// Parameters:
+//   - ctx: The context for the operation
+//   - id: The ID of the document to delete
+//
+// Returns:
+//   - nil if the deletion is successful
+func (repo *MongoBaseRepository[T]) DeleteOneById(ctx context.Context, id string) error {
+	filter := bson.M{"_id": id}
+	_, err := repo.collection.DeleteOne(ctx, filter)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
